@@ -55,6 +55,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
     @Resource
     private RedisService redisService;
 
+    private static final String SALT = "*(sdlfj^$%";
+
     /**
      * 用户注册
      *
@@ -67,6 +69,7 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         if (checkUser(userVO)) {
             throw new BusinessException("邮箱已被注册！");
         }
+        // todo 感觉这里要原子化，三个插入数据库有点久
         try {
             LocalDateTime now = LocalDateTime.now();
             // 创建用户信息
@@ -141,16 +144,15 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
             throw new BusinessException("请重新输入验证码！");
         }
         UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
-                .eq(UserAuth::getUsername, userVO.getUsername())
-                .eq(UserAuth::getPassword, userVO.getPassword()));
-        if (userAuth == null) {
+                .eq(UserAuth::getUsername, userVO.getUsername()));
+        if (userAuth == null || !BCrypt.checkpw(userVO.getPassword(), userAuth.getPassword())) {
             throw new BusinessException("用户名或者密码错误，请重新输入！");
         }
         // 随机生成 token，作为登入令牌
         String token = UUID.randomUUID().toString();
         // 将user对象脱敏后转化成HashMap进行存储
         UserDTO userDTO = BeanUtil.copyProperties(userVO, UserDTO.class);
-        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(3),
+        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(),
                 CopyOptions.create().setIgnoreNullValue(true)
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
         // 存储

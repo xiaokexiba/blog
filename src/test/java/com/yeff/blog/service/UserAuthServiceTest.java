@@ -18,17 +18,29 @@ class UserAuthServiceTest {
     @Test
     void testRegister() {
         UserVO userVO = new UserVO();
-        userVO.setUsername("yjmqaz@126.com");
+        userVO.setUsername("yjmqaz1@126.com");
         userVO.setPassword("123123");
-        userVO.setCode("762725");
+//        userVO.setCode("762725");
+        userVO.setCode("870821");
         String result = userAuthService.register(userVO).toString();
         System.out.println(result);
     }
 
     @Test
     void testSendCode() {
-        String email = "yjmqaz@126.com";
+        String email = "yjmqaz1@126.com";
         Result result = userAuthService.sendCode(email);
         System.out.println(result.toString());
+    }
+
+    @Test
+    void testLogin() {
+        UserVO userVO = new UserVO();
+        userVO.setUsername("yjmqaz1@126.com");
+        userVO.setPassword("123123");
+//        userVO.setCode("762725");
+        userVO.setCode("870821");
+        Result re = userAuthService.login(userVO);
+        System.out.println(re);
     }
 }
