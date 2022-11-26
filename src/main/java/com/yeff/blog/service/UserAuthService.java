@@ -20,4 +20,20 @@ public interface UserAuthService extends IService<UserAuth> {
      * @return 返回结果
      */
     Result register(UserVO userVO);
+
+    /**
+     * 发送邮箱验证码
+     *
+     * @param email 邮箱
+     * @return 返回结果
+     */
+    Result sendCode(String email);
+
+    /**
+     * 用户登入
+     *
+     * @param userVO 用户VO
+     * @return 返回结果
+     */
+    Result login(UserVO userVO);
 }

@@ -11,13 +11,20 @@ public class RedisPrefixConst {
     /**
      * 验证码过期时间
      */
-    public static final long CODE_EXPIRE_TIME = 5 * 60;
+    public static final Long CODE_EXPIRE_TIME = 2L;
 
     /**
      * 验证码
      */
     public static final String USER_CODE_KEY = "code:";
-
+    /**
+     * token
+     */
+    public static final String LOGIN_USER_KEY = "token:";
+    /**
+     * token过期时间
+     */
+    public static final Long LOGIN_USER_TTL = 30L;
     /**
      * 博客浏览量
      */

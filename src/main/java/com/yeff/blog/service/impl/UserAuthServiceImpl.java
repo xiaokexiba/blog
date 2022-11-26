@@ -1,8 +1,15 @@
 package com.yeff.blog.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yeff.blog.dto.EmailDTO;
+import com.yeff.blog.dto.UserDTO;
 import com.yeff.blog.entity.UserAuth;
 import com.yeff.blog.entity.UserInfo;
 import com.yeff.blog.entity.UserRole;
@@ -13,14 +20,19 @@ import com.yeff.blog.mapper.UserInfoMapper;
 import com.yeff.blog.mapper.UserRoleMapper;
 import com.yeff.blog.service.RedisService;
 import com.yeff.blog.service.UserAuthService;
+import com.yeff.blog.utils.RegexUtils;
 import com.yeff.blog.vo.UserVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.yeff.blog.constant.CommonConst.DEFAULT_NICKNAME;
-import static com.yeff.blog.constant.RedisPrefixConst.USER_CODE_KEY;
+import static com.yeff.blog.constant.RedisPrefixConst.*;
 import static com.yeff.blog.enums.RoleEnum.USER;
 
 /**
@@ -29,6 +41,7 @@ import static com.yeff.blog.enums.RoleEnum.USER;
  * @author xoke
  * @date 2022/11/24
  */
+@Slf4j
 @Service
 public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         implements UserAuthService {
@@ -54,28 +67,101 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         if (checkUser(userVO)) {
             throw new BusinessException("邮箱已被注册！");
         }
-        // 创建用户信息
-        UserInfo userInfo = UserInfo.builder()
-                .email(userVO.getUsername())
-                .nickname(DEFAULT_NICKNAME + IdWorker.getId())
-                .avatar("")
-                .build();
-        // 新增用户信息
-        userInfoMapper.insert(userInfo);
-        // 创建用户角色关联
-        UserRole userRole = UserRole.builder()
-                .userId(userInfo.getId())
-                .roleId(USER.getRoleId())
-                .build();
-        // 新增用户角色关联
-        userRoleMapper.insert(userRole);
-        // 创建用户账号
-        UserAuth userAuth = UserAuth.builder()
-                .build();
-        // 新增用户账号
-        userAuthMapper.insert(userAuth);
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            // 创建用户信息
+            UserInfo userInfo = UserInfo.builder()
+                    .email(userVO.getUsername())
+                    .nickname(DEFAULT_NICKNAME + IdWorker.getId())
+                    .avatar("")
+                    .createTime(now)
+                    .build();
+            // 新增用户信息
+            userInfoMapper.insert(userInfo);
+            // 创建用户角色关联
+            UserRole userRole = UserRole.builder()
+                    .userId(userInfo.getId())
+                    .roleId(USER.getRoleId())
+                    .build();
+            // 新增用户角色关联
+            userRoleMapper.insert(userRole);
+            // 创建用户账号
+            UserAuth userAuth = UserAuth.builder()
+                    .userInfoId(userInfo.getId())
+                    .username(userVO.getUsername())
+                    .password(BCrypt.hashpw(userVO.getPassword(), BCrypt.gensalt()))
+                    .createTime(now)
+                    .build();
+            // 新增用户账号
+            userAuthMapper.insert(userAuth);
+        } catch (Exception e) {
+            log.info("这里好像有点问题！");
+            e.printStackTrace();
+        }
         return Result.ok();
     }
+
+    /**
+     * 发送邮箱验证码
+     *
+     * @param email 邮箱
+     * @return 返回结果
+     */
+    @Override
+    public Result sendCode(String email) {
+        // 校验手机号
+        if (RegexUtils.isEmailInvalid(email)) {
+            // 不符合，返回错误信息
+            return Result.fail("邮箱格式错误，请输入正确的邮箱！");
+        }
+        // 符合，生成验证码（随机6位数字即可）
+        String code = RandomUtil.randomNumbers(6);
+        EmailDTO emailDTO = EmailDTO.builder()
+                .email(email)
+                .subject("验证码")
+                .content("您的验证码为 " + code + " 有效期5分钟，请不要告诉他人哦！")
+                .build();
+        // 保存验证码到 redis
+        redisService.set(USER_CODE_KEY + email, code, CODE_EXPIRE_TIME);
+        // 发送验证码（由于业务有点复杂，后面研究一下怎么发短信，这里简单发送日志意思一下）
+        log.info("发送验证码成功，验证码：{}", code);
+        // 返回ok
+        return Result.ok();
+    }
+
+    /**
+     * 用户登入
+     *
+     * @param userVO 用户VO
+     * @return 返回结果
+     */
+    @Override
+    public Result login(UserVO userVO) {
+        if (!userVO.getCode().equals(redisService.get(USER_CODE_KEY + userVO.getUsername()))) {
+            throw new BusinessException("请重新输入验证码！");
+        }
+        UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
+                .eq(UserAuth::getUsername, userVO.getUsername())
+                .eq(UserAuth::getPassword, userVO.getPassword()));
+        if (userAuth == null) {
+            throw new BusinessException("用户名或者密码错误，请重新输入！");
+        }
+        // 随机生成 token，作为登入令牌
+        String token = UUID.randomUUID().toString();
+        // 将user对象脱敏后转化成HashMap进行存储
+        UserDTO userDTO = BeanUtil.copyProperties(userVO, UserDTO.class);
+        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(3),
+                CopyOptions.create().setIgnoreNullValue(true)
+                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
+        // 存储
+        String tokenKey = LOGIN_USER_KEY + token;
+        redisService.hSetAll(tokenKey, map);
+        // 设置 token 有效期
+        redisService.expire(tokenKey, LOGIN_USER_TTL);
+        // 返回 token
+        return Result.ok(token);
+    }
+
 
     /**
      * 校验用户数据是否合法
@@ -84,10 +170,11 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
      * @return 结果
      */
     private Boolean checkUser(UserVO userVO) {
+        // 首先先判断验证码
         if (!userVO.getCode().equals(redisService.get(USER_CODE_KEY + userVO.getUsername()))) {
-            throw new BusinessException("验证码错误！");
+            throw new BusinessException("请重新输入验证码！");
         }
-        //查询用户名是否存在
+        // 查询用户名是否存在
         UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
                 .select(UserAuth::getUsername)
                 .eq(UserAuth::getUsername, userVO.getUsername()));
