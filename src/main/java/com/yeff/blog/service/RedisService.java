@@ -1,6 +1,7 @@
 package com.yeff.blog.service;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Redis业务层接口
@@ -51,4 +52,20 @@ public interface RedisService {
      * @param map hashMap值
      */
     void hSetAll(String key, Map<String, ?> map);
+
+    /**
+     * 删除值为key的value
+     *
+     * @param key key值
+     */
+    Boolean del(String key);
+
+    /**
+     * 获取set集合中的元素
+     *
+     * @param key key值
+     * @return set值
+     */
+    Set<Object> sMembers(String key);
+
 }

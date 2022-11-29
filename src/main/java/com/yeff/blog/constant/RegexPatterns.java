@@ -1,10 +1,12 @@
-package com.yeff.blog.utils;
+package com.yeff.blog.constant;
 
 /**
+ * 正则规则常量
+ *
  * @author xoke
  * @date 2022/11/26
  */
-public abstract class RegexPatterns {
+public class RegexPatterns {
     /**
      * 手机号正则
      */

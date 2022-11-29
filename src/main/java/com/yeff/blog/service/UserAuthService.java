@@ -36,4 +36,11 @@ public interface UserAuthService extends IService<UserAuth> {
      * @return 返回结果
      */
     Result login(UserVO userVO);
+
+    /**
+     * 退出账号
+     *
+     * @return 返回结果
+     */
+    Result logout();
 }

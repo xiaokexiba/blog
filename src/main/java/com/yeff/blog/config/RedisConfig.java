@@ -28,7 +28,7 @@ public class RedisConfig {
         // 设置hashKey和hashValue的序列化规则
         redisTemplate.setHashKeySerializer(new GenericToStringSerializer<>(Object.class));
         redisTemplate.setHashValueSerializer(genericFastJsonRedisSerializer);
-        // 设置支持事物
+        // 设置支持事务
         redisTemplate.setEnableTransactionSupport(true);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;

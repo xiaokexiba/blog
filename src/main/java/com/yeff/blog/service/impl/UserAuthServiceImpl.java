@@ -3,13 +3,17 @@ package com.yeff.blog.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.BCrypt;
+import cn.hutool.jwt.JWTUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yeff.blog.dto.EmailDTO;
 import com.yeff.blog.dto.UserDTO;
+import com.yeff.blog.dto.UserDetailDTO;
+import com.yeff.blog.entity.LoginUser;
 import com.yeff.blog.entity.UserAuth;
 import com.yeff.blog.entity.UserInfo;
 import com.yeff.blog.entity.UserRole;
@@ -20,9 +24,14 @@ import com.yeff.blog.mapper.UserInfoMapper;
 import com.yeff.blog.mapper.UserRoleMapper;
 import com.yeff.blog.service.RedisService;
 import com.yeff.blog.service.UserAuthService;
+import com.yeff.blog.utils.JwtUtils;
 import com.yeff.blog.utils.RegexUtils;
 import com.yeff.blog.vo.UserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,6 +63,8 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
     private UserInfoMapper userInfoMapper;
     @Resource
     private RedisService redisService;
+    @Resource
+    private AuthenticationManager authenticationManager;
 
     private static final String SALT = "*(sdlfj^$%";
 
@@ -140,10 +151,22 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
      */
     @Override
     public Result login(UserVO userVO) {
+        // 先从redis中判断验证码
         if (!userVO.getCode().equals(redisService.get(USER_CODE_KEY + userVO.getUsername()))) {
             throw new BusinessException("请重新输入验证码！");
         }
-        UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userVO.getUsername(), userVO.getPassword());
+        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        if (Objects.isNull(authenticate)) {
+            throw new BusinessException("用户名或密码错误");
+        }
+        // 使用userId生成token
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        String userId = loginUser.getUserDetailDTO().getId().toString();
+        String jwt = JwtUtils.createJWT(userId);
+        // authenticate存入redis
+        redisService.set(LOGIN_KEY + userId, loginUser);
+        /*UserAuth userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
                 .eq(UserAuth::getUsername, userVO.getUsername()));
         if (userAuth == null || !BCrypt.checkpw(userVO.getPassword(), userAuth.getPassword())) {
             throw new BusinessException("用户名或者密码错误，请重新输入！");
@@ -160,8 +183,25 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         redisService.hSetAll(tokenKey, map);
         // 设置 token 有效期
         redisService.expire(tokenKey, LOGIN_USER_TTL);
-        // 返回 token
-        return Result.ok(token);
+        // 返回 token*/
+        //把token响应给前端
+        HashMap<String, String> map = new HashMap<>();
+        map.put("token", jwt);
+        return Result.ok(map);
+    }
+
+    /**
+     * 退出账号
+     *
+     * @return 返回结果
+     */
+    @Override
+    public Result logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        int userId = loginUser.getUserDetailDTO().getId();
+        redisService.del("login:" + userId);
+        return Result.ok();
     }
 
 

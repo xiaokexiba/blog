@@ -1,8 +1,11 @@
 package com.yeff.blog.utils;
 
 import cn.hutool.core.util.StrUtil;
+import com.yeff.blog.constant.RegexPatterns;
 
 /**
+ * 正则工具类
+ *
  * @author xoke
  * @date 2022/11/26
  */

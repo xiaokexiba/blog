@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -79,5 +80,26 @@ public class RedisServiceImpl implements RedisService {
     @Override
     public void hSetAll(String key, Map<String, ?> map) {
         redisTemplate.opsForHash().putAll(key, map);
+    }
+
+    /**
+     * 删除值为key的value
+     *
+     * @param key key值
+     */
+    @Override
+    public Boolean del(String key) {
+        return redisTemplate.delete(key);
+    }
+
+    /**
+     * 获取set集合中的元素
+     *
+     * @param key key值
+     * @return set值
+     */
+    @Override
+    public Set<Object> sMembers(String key) {
+        return redisTemplate.opsForSet().members(key);
     }
 }

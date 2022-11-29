@@ -36,10 +36,9 @@ class UserAuthServiceTest {
     @Test
     void testLogin() {
         UserVO userVO = new UserVO();
-        userVO.setUsername("yjmqaz1@126.com");
+        userVO.setUsername("yjmqaz@126.com");
         userVO.setPassword("123123");
-//        userVO.setCode("762725");
-        userVO.setCode("870821");
+        userVO.setCode("789456");
         Result re = userAuthService.login(userVO);
         System.out.println(re);
     }

@@ -17,14 +17,22 @@ public class RedisPrefixConst {
      * 验证码
      */
     public static final String USER_CODE_KEY = "code:";
+
     /**
      * token
      */
     public static final String LOGIN_USER_KEY = "token:";
+
     /**
      * token过期时间
      */
     public static final Long LOGIN_USER_TTL = 30L;
+
+    /**
+     * 用户登入
+     */
+    public static final String LOGIN_KEY = "login:";
+
     /**
      * 博客浏览量
      */
