@@ -5,6 +5,7 @@ import com.yeff.blog.exception.BusinessException;
 import com.yeff.blog.service.RedisService;
 import com.yeff.blog.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +33,7 @@ import static com.yeff.blog.constant.RedisPrefixConst.LOGIN_KEY;
  * @author xoke
  * @date 2022/11/29
  */
+@Slf4j
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
@@ -54,18 +56,18 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             userId = claims.getSubject();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("token非法");
+            throw new RuntimeException("token非法");
         }
         // 从redis中获取用户信息
         String redisKey = LOGIN_KEY + userId;
         LoginUser loginUser = (LoginUser) redisService.get(redisKey);
         if (Objects.isNull(loginUser)) {
-            throw new BusinessException("用户未登录");
+            throw new RuntimeException("用户未登录");
         }
         // 存入SecurityContextHolder
         // TODO 获取权限信息封装到Authentication中
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginUser, null, null);
+                new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         // 放行
         filterChain.doFilter(request, response);

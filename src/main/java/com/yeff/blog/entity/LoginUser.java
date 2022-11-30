@@ -2,6 +2,7 @@ package com.yeff.blog.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.yeff.blog.dto.UserDetailDTO;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +23,7 @@ import static com.yeff.blog.constant.CommonConst.FALSE;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class LoginUser implements UserDetails {
 
     /**

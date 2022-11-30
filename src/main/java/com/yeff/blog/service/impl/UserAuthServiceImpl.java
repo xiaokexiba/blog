@@ -157,6 +157,7 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userVO.getUsername(), userVO.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
+        // 如果认证不通过，抛异常
         if (Objects.isNull(authenticate)) {
             throw new BusinessException("用户名或密码错误");
         }
@@ -184,7 +185,7 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
         // 设置 token 有效期
         redisService.expire(tokenKey, LOGIN_USER_TTL);
         // 返回 token*/
-        //把token响应给前端
+        // 把token响应给前端
         HashMap<String, String> map = new HashMap<>();
         map.put("token", jwt);
         return Result.ok(map);

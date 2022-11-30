@@ -1,6 +1,8 @@
 package com.yeff.blog.exception;
 
 import com.yeff.blog.enums.StatusCodeEnum;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import static com.yeff.blog.enums.StatusCodeEnum.FAIL;
 
@@ -10,6 +12,8 @@ import static com.yeff.blog.enums.StatusCodeEnum.FAIL;
  * @author xoke
  * @date 2022/11/24
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class BusinessException extends RuntimeException {
 
     /**
@@ -20,31 +24,22 @@ public class BusinessException extends RuntimeException {
     /**
      * 错误信息
      */
-    private final String message;
+    private final String errorMessage;
 
-    public int getCode() {
-        return code;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    public BusinessException(String message) {
+    public BusinessException(String errorMessage) {
         this.code = FAIL.getCode();
-        this.message = message;
+        this.errorMessage = errorMessage;
     }
 
     public BusinessException(StatusCodeEnum statusCodeEnum) {
         super(statusCodeEnum.getDesc());
         this.code = statusCodeEnum.getCode();
-        this.message = statusCodeEnum.getDesc();
+        this.errorMessage = statusCodeEnum.getDesc();
     }
 
-    public BusinessException(StatusCodeEnum statusCodeEnum, String message) {
+    public BusinessException(StatusCodeEnum statusCodeEnum, String errorMessage) {
         super(statusCodeEnum.getDesc());
         this.code = statusCodeEnum.getCode();
-        this.message = message;
+        this.errorMessage = errorMessage;
     }
 }

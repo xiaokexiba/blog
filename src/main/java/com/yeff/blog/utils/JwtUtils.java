@@ -94,6 +94,7 @@ public class JwtUtils {
                 .setIssuer("sg")
                 // 签发时间
                 .setIssuedAt(now)
+                //使用HS256对称加密算法签名, 第二个参数为秘钥
                 .signWith(signatureAlgorithm, secretKey)
                 .setExpiration(expDate);
     }

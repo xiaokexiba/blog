@@ -5,9 +5,7 @@ import com.yeff.blog.service.UserAuthService;
 import com.yeff.blog.vo.UserVO;
 import io.swagger.annotations.Api;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -52,9 +50,14 @@ public class UserAuthController {
      * @param userVO 用户VO
      * @return 返回结果
      */
-    @PostMapping("/login")
-    @PreAuthorize("hasAuthority('test')")
-    public Result login(UserVO userVO) {
+    @PostMapping("/user/login")
+//    @PreAuthorize("hasAuthority('test')")
+    public Result login(@RequestBody UserVO userVO) {
         return userAuthService.login(userVO);
+    }
+
+    @RequestMapping("/user/logout")
+    public Result logout() {
+        return userAuthService.logout();
     }
 }

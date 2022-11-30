@@ -42,7 +42,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private UserInfoMapper userInfoMapper;
     @Resource
     private HttpServletRequest request;
-//    @Resource
+    //    @Resource
 //    private RoleMapper roleMapper;
     @Resource
     private RedisService redisService;

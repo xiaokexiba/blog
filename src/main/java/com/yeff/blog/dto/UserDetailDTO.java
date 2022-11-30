@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +20,9 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDetailDTO {
+public class UserDetailDTO implements Serializable {
+
+    private static final long serialVersionUID = -40356785423868312L;
 
     /**
      * 用户账号id
