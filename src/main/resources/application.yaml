@@ -13,6 +13,7 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
   main:
     allow-circular-references: true
+    allow-bean-definition-overriding: true
   # redis配置
   redis:
     host: 120.24.74.7

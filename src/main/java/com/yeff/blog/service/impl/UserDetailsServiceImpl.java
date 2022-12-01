@@ -59,7 +59,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (ObjectUtil.isNull(userAuth)) {
             throw new BusinessException("用户名或者密码错误！");
         }
-        List<String> list = new ArrayList<>(Arrays.asList("test"));
+        List<String> list = new ArrayList<>(Arrays.asList("test", "admin"));
 //        return convertUserDetail(userAuth);
         return new LoginUser(BeanUtil.copyProperties(userAuth, UserDetailDTO.class), list);
     }

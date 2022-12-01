@@ -5,24 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 /**
- * 用户详细信息DTO
+ * 用户信息
  *
  * @author xoke
- * @date 2022/11/29
+ * @date 2022/12/1
  */
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class    UserDetailDTO implements Serializable {
-
-    private static final long serialVersionUID = -40356785423868312L;
+@NoArgsConstructor
+@Builder
+public class UserInfoDTO {
 
     /**
      * 用户账号id
@@ -48,16 +44,6 @@ public class    UserDetailDTO implements Serializable {
      * 用户名
      */
     private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
-
-    /**
-     * 用户角色
-     */
-    private List<String> roleList;
 
     /**
      * 用户昵称
@@ -90,7 +76,7 @@ public class    UserDetailDTO implements Serializable {
     private Set<Object> commentLikeSet;
 
     /**
-     * 点赞说说集合
+     * 点赞评论集合
      */
     private Set<Object> talkLikeSet;
 
@@ -105,22 +91,8 @@ public class    UserDetailDTO implements Serializable {
     private String ipSource;
 
     /**
-     * 是否禁用
-     */
-    private Integer isDisable;
-
-    /**
-     * 浏览器
-     */
-    private String browser;
-
-    /**
-     * 操作系统
-     */
-    private String os;
-
-    /**
      * 最近登录时间
      */
     private LocalDateTime lastLoginTime;
+
 }
