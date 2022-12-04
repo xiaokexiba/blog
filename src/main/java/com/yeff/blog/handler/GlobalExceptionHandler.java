@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AuthenticationException.class)
     public Result authenticationException(AuthenticationException e) {
         log.error("AuthenticationException:" + e.getMessage(), e);
-        return Result.fail("认证失败请重新登录！");
+        return Result.fail(e.getMessage());
     }
 
     @ExceptionHandler(value = RuntimeException.class)

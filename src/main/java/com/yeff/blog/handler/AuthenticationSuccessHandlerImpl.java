@@ -26,11 +26,13 @@ import static com.yeff.blog.constant.CommonConst.APPLICATION_JSON;
  * @author xoke
  * @date 2022/12/1
  */
+@Slf4j
 @Component
 public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHandler {
 
     @Resource
     private UserAuthMapper userAuthMapper;
+
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -39,6 +41,7 @@ public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHa
         response.setContentType(APPLICATION_JSON);
         response.getWriter().write(JSON.toJSONString(Result.ok(userLoginDTO)));
         // 更新用户ip，最近登录时间
+        log.info("登入成功");
         updateUserInfo();
     }
 

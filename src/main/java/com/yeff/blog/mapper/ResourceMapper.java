@@ -4,7 +4,10 @@ import com.yeff.blog.entity.Resource;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * @Entity generator.domain.TbResource
+ * 资源持久层接口
+ *
+ * @author xoke
+ * @date 2022/12/2
  */
 public interface ResourceMapper extends BaseMapper<Resource> {
 
