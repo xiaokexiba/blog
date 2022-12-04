@@ -44,7 +44,7 @@ public class Role implements Serializable {
     /**
      * 是否禁用  0否 1是
      */
-    private Boolean isDisable;
+    private Integer isDisable;
 
     /**
      * 创建时间

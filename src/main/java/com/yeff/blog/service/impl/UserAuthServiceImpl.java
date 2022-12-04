@@ -33,6 +33,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -74,13 +75,13 @@ public class UserAuthServiceImpl extends ServiceImpl<UserAuthMapper, UserAuth>
      * @param userVO 用户VO
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result register(UserVO userVO) {
         // 判断是否已经注册
         if (checkUser(userVO)) {
             throw new BusinessException("邮箱已被注册！");
         }
-        // todo 感觉这里要原子化，三个插入数据库有点久
         try {
             LocalDateTime now = LocalDateTime.now();
             // 创建用户信息
