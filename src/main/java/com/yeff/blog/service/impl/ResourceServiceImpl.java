@@ -3,7 +3,10 @@ package com.yeff.blog.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.injector.methods.SelectOne;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yeff.blog.dto.LabelOptionDTO;
 import com.yeff.blog.dto.ResourceDTO;
 import com.yeff.blog.entity.Resource;
 import com.yeff.blog.entity.RoleResource;
@@ -17,7 +20,10 @@ import com.yeff.blog.vo.ConditionVO;
 import com.yeff.blog.vo.ResourceVO;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -88,8 +94,55 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
      */
     @Override
     public List<ResourceDTO> listResources(ConditionVO conditionVO) {
+        // 查询资源列表
+        List<Resource> resourceList = resourceMapper.selectList(new LambdaQueryWrapper<Resource>()
+                .like(StringUtils.isNotBlank(conditionVO.getKeywords()), Resource::getResourceName, conditionVO.getKeywords()));
+        // 获取所有模块
+        List<Resource> parentList = listResourceModule(resourceList);
+        // 根据父id分组获取模块下的资源
+        Map<Integer, List<Resource>> childrenMap = listResourceChildren(resourceList);
+        // 绑定模块下的所有接口
+        List<ResourceDTO> resourceDTOList = parentList.stream().map(item -> {
+            ResourceDTO resourceDTO = BeanUtil.copyProperties(item, ResourceDTO.class);
+            List<ResourceDTO> childrenList = BeanUtil.copyToList(childrenMap.get(item.getId()), ResourceDTO.class);
+            resourceDTO.setChildren(childrenList);
+            childrenMap.remove(item.getId());
+            return resourceDTO;
+        }).collect(Collectors.toList());
+        // 若还有资源未取出则拼接
+        if (CollectionUtils.isNotEmpty(childrenMap)) {
+            List<Resource> childrenList = new ArrayList<>();
+            childrenMap.values().forEach(childrenList::addAll);
+            List<ResourceDTO> childrenDTOList = childrenList.stream()
+                    .map(item -> BeanUtil.copyProperties(item, ResourceDTO.class))
+                    .collect(Collectors.toList());
+            resourceDTOList.addAll(childrenDTOList);
+        }
+        return resourceDTOList;
+    }
 
-        return null;
+    /**
+     * 获取模块下的所有资源
+     *
+     * @param resourceList 资源列表
+     * @return 模块资源
+     */
+    private Map<Integer, List<Resource>> listResourceChildren(List<Resource> resourceList) {
+        return resourceList.stream()
+                .filter(item -> Objects.nonNull(item.getParentId()))
+                .collect(Collectors.groupingBy(Resource::getParentId));
+    }
+
+    /**
+     * 获取所有资源模块
+     *
+     * @param resourceList 资源列表
+     * @return 资源模块列表
+     */
+    private List<Resource> listResourceModule(List<Resource> resourceList) {
+        return resourceList.stream()
+                .filter(item -> Objects.isNull(item.getParentId()))
+                .collect(Collectors.toList());
     }
 }
 
