@@ -1,5 +1,6 @@
 package com.yeff.blog.service;
 
+import com.yeff.blog.dto.LabelOptionDTO;
 import com.yeff.blog.dto.ResourceDTO;
 import com.yeff.blog.entity.Resource;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -40,4 +41,11 @@ public interface ResourceService extends IService<Resource> {
      * @return 返回结果
      */
     List<ResourceDTO> listResources(ConditionVO conditionVO);
+
+    /**
+     * 查看资源选项
+     *
+     * @return 资源选项
+     */
+    List<LabelOptionDTO> listResourceOption();
 }

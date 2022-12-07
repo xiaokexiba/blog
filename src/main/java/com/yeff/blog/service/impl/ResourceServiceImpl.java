@@ -2,7 +2,6 @@ package com.yeff.blog.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.injector.methods.SelectOne;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -25,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.yeff.blog.constant.CommonConst.FALSE;
 
 /**
  * 资源业务层接口实现类
@@ -119,6 +120,41 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
             resourceDTOList.addAll(childrenDTOList);
         }
         return resourceDTOList;
+    }
+
+    /**
+     * 查看资源选项
+     *
+     * @return 资源选项
+     */
+    @Override
+    public List<LabelOptionDTO> listResourceOption() {
+        // 查询资源列表
+        List<Resource> resourceList = resourceMapper.selectList(new LambdaQueryWrapper<Resource>()
+                .select(Resource::getId, Resource::getResourceName, Resource::getParentId)
+                .eq(Resource::getIsAnonymous, FALSE));
+        // 获取所有模块
+        List<Resource> parentList = listResourceModule(resourceList);
+        // 根据父id分组获取模块下的资源
+        Map<Integer, List<Resource>> childrenMap = listResourceChildren(resourceList);
+        // 组装父子数据
+        return parentList.stream().map(item -> {
+            List<LabelOptionDTO> list = new ArrayList<>();
+            List<Resource> children = childrenMap.get(item.getId());
+            if (CollectionUtils.isNotEmpty(children)) {
+                list = children.stream()
+                        .map(resource -> LabelOptionDTO.builder()
+                                .id(resource.getId())
+                                .label(resource.getResourceName())
+                                .build())
+                        .collect(Collectors.toList());
+            }
+            return LabelOptionDTO.builder()
+                    .id(item.getId())
+                    .label(item.getResourceName())
+                    .children(list)
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     /**
