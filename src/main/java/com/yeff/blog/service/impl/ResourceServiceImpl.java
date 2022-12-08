@@ -18,6 +18,7 @@ import com.yeff.blog.mapper.ResourceMapper;
 import com.yeff.blog.vo.ConditionVO;
 import com.yeff.blog.vo.ResourceVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
      * @param resourceVO 资源信息
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result saveOrUpdateResource(ResourceVO resourceVO) {
         // 更新资源信息
@@ -66,6 +68,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
      * @param resourceId 资源ID
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result deleteResource(Integer resourceId) {
         // 查询是否有角色关联
@@ -93,6 +96,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
      * @param conditionVO 查询条件
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ResourceDTO> listResources(ConditionVO conditionVO) {
         // 查询资源列表
@@ -127,6 +131,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource>
      *
      * @return 资源选项
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<LabelOptionDTO> listResourceOption() {
         // 查询资源列表

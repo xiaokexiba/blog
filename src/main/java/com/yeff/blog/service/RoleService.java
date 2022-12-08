@@ -1,8 +1,11 @@
 package com.yeff.blog.service;
 
+import com.yeff.blog.dto.RoleDTO;
 import com.yeff.blog.entity.Role;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yeff.blog.handler.Result;
+import com.yeff.blog.vo.ConditionVO;
+import com.yeff.blog.vo.PageResult;
 import com.yeff.blog.vo.RoleVO;
 
 import java.util.List;
@@ -30,4 +33,12 @@ public interface RoleService extends IService<Role> {
      * @return 返回结果
      */
     Result deleteRoles(List<Integer> roleIdList);
+
+    /**
+     * 查询角色列表
+     *
+     * @param conditionVO 条件
+     * @return 角色列表
+     */
+    PageResult<RoleDTO> listRoles(ConditionVO conditionVO);
 }

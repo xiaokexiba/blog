@@ -3,6 +3,7 @@ package com.yeff.blog.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yeff.blog.constant.CommonConst;
+import com.yeff.blog.dto.RoleDTO;
 import com.yeff.blog.entity.Role;
 import com.yeff.blog.entity.RoleMenu;
 import com.yeff.blog.entity.RoleResource;
@@ -15,8 +16,11 @@ import com.yeff.blog.service.RoleMenuService;
 import com.yeff.blog.service.RoleResourceService;
 import com.yeff.blog.service.RoleService;
 import com.yeff.blog.mapper.RoleMapper;
+import com.yeff.blog.vo.ConditionVO;
+import com.yeff.blog.vo.PageResult;
 import com.yeff.blog.vo.RoleVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -51,6 +55,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
      * @param roleVO 角色信息
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result saveOrUpdateRole(RoleVO roleVO) {
         // 判断是否重复
@@ -106,6 +111,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
      * @param roleIdList 角色id列表
      * @return 返回结果
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result deleteRoles(List<Integer> roleIdList) {
         Long count = userRoleMapper.selectCount(new LambdaQueryWrapper<UserRole>()
@@ -115,6 +121,19 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
         }
         int result = roleMapper.deleteBatchIds(roleIdList);
         return Result.ok(result);
+    }
+
+    /**
+     * 查询角色列表
+     *
+     * @param conditionVO 条件
+     * @return 角色列表
+     */
+    @Override
+    public PageResult<RoleDTO> listRoles(ConditionVO conditionVO) {
+
+
+        return null;
     }
 }
 
