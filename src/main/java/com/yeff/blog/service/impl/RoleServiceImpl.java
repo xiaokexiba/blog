@@ -1,6 +1,7 @@
 package com.yeff.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yeff.blog.constant.CommonConst;
 import com.yeff.blog.dto.RoleDTO;
@@ -16,6 +17,7 @@ import com.yeff.blog.service.RoleMenuService;
 import com.yeff.blog.service.RoleResourceService;
 import com.yeff.blog.service.RoleService;
 import com.yeff.blog.mapper.RoleMapper;
+import com.yeff.blog.utils.PageUtils;
 import com.yeff.blog.vo.ConditionVO;
 import com.yeff.blog.vo.PageResult;
 import com.yeff.blog.vo.RoleVO;
@@ -73,7 +75,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
                 .isDisable(CommonConst.FALSE)
                 .build();
         saveOrUpdate(role);
-        // 更新角色资源关系
+        // TODO 更新角色资源关系
         if (Objects.nonNull(roleVO.getResourceIdList())) {
             if (Objects.nonNull(roleVO.getId())) {
                 roleResourceService.remove(new LambdaQueryWrapper<RoleResource>()
@@ -131,9 +133,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
      */
     @Override
     public PageResult<RoleDTO> listRoles(ConditionVO conditionVO) {
-
-
-        return null;
+        // 查询角色列表
+        List<RoleDTO> roleDTOList = roleMapper.listRoles(PageUtils.getLimitCurrent(), PageUtils.getSize(), conditionVO);
+        // 查询总量
+        Long count = roleMapper.selectCount(new LambdaQueryWrapper<Role>()
+                .like(StringUtils.isNotBlank(conditionVO.getKeywords()), Role::getRoleName, conditionVO.getKeywords()));
+        return new PageResult<>(roleDTOList, count.intValue());
     }
 }
 

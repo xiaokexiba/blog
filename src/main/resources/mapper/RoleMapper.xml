@@ -57,4 +57,5 @@
         WHERE parent_id is NOT NULL
           AND is_anonymous = 0
     </select>
+    <select id="listRoles" resultType="com.yeff.blog.dto.RoleDTO"></select>
 </mapper>
